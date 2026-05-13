@@ -63,6 +63,22 @@ describe('CLI Entry Point', () => {
       });
     });
 
+    it('should handle start --help', (done) => {
+      const child = spawn('node', [cliPath, 'start', '--help']);
+      let output = '';
+
+      child.stdout.on('data', (data) => {
+        output += data.toString();
+      });
+
+      child.on('close', (code) => {
+        expect(code).toBe(0);
+        expect(output).toContain('Usage: npx aiox-core start');
+        expect(output).toContain('--ide <name>');
+        done();
+      });
+    });
+
     it('should handle info command', (done) => {
       const child = spawn('node', [cliPath, 'info']);
       let output = '';

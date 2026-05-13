@@ -60,6 +60,7 @@ AI-Orchestrated System for Full Stack Development
 
 USAGE:
   npx aiox-core@latest              # Run installation wizard
+  npx aiox-core@latest start        # Start here: detect IDE + activation path
   npx aiox-core@latest install      # Install in current project
   npx aiox-core@latest init <name>  # Create new project
   npx aiox-core@latest update       # Update to latest version
@@ -112,6 +113,179 @@ EXAMPLES:
 
 For more information, visit: https://github.com/SynkraAI/aiox-core
 `);
+}
+
+const IDE_START_MATRIX = {
+  claude: {
+    label: 'Claude Code',
+    detect: ['.claude/CLAUDE.md', '.claude/commands/AIOX/agents'],
+    activation: '/agent-name',
+    syncScripts: ['sync:ide:claude'],
+    setupHint: 'Use slash commands like /dev or /architect.',
+  },
+  gemini: {
+    label: 'Gemini CLI',
+    detect: ['.gemini/rules.md', '.gemini/rules/AIOX/agents'],
+    activation: '/aiox-menu then /aiox-<agent>',
+    syncScripts: ['sync:ide:gemini'],
+    setupHint: 'Use /aiox-menu first, then activate an AIOX agent.',
+  },
+  codex: {
+    label: 'Codex CLI',
+    detect: ['AGENTS.md', '.codex/skills', '.codex/agents'],
+    activation: '/skills then aiox-<agent-id>',
+    syncScripts: ['sync:ide:codex', 'sync:skills:codex'],
+    setupHint: 'Use /skills and choose aiox-<agent-id>.',
+  },
+  cursor: {
+    label: 'Cursor',
+    detect: ['.cursor/rules.md', '.cursor/rules'],
+    activation: '@agent-name + synced rules',
+    syncScripts: ['sync:ide:cursor'],
+    setupHint: 'Mention agents like @dev after syncing rules.',
+  },
+  'github-copilot': {
+    label: 'GitHub Copilot',
+    detect: ['.github/copilot-instructions.md'],
+    activation: 'Chat modes + repository instructions',
+    syncScripts: ['sync:ide:github-copilot'],
+    setupHint: 'Use Copilot chat with repository instructions enabled.',
+  },
+  antigravity: {
+    label: 'AntiGravity',
+    detect: ['.antigravity/rules.md', '.antigravity/antigravity.json'],
+    activation: 'Workflow-driven activation',
+    syncScripts: ['sync:ide:antigravity'],
+    setupHint: 'Run the generated workflows and follow their launch steps.',
+  },
+};
+
+const IDE_START_ORDER = ['claude', 'gemini', 'codex', 'cursor', 'github-copilot', 'antigravity'];
+
+function detectIde(cwd) {
+  for (const ideKey of IDE_START_ORDER) {
+    const ide = IDE_START_MATRIX[ideKey];
+    if (ide.detect.some((marker) => fs.existsSync(path.join(cwd, marker)))) {
+      return ideKey;
+    }
+  }
+  return null;
+}
+
+function parseFlagValue(flagName, localArgs) {
+  const index = localArgs.findIndex((arg) => arg === flagName);
+  if (index === -1) return null;
+  const value = localArgs[index + 1];
+  if (!value || value.startsWith('-')) {
+    console.error(`❌ ${flagName} requires a value.`);
+    process.exit(1);
+  }
+  return value;
+}
+
+function runStartScript(scriptName, options = {}) {
+  const { dryRun = false, quiet = false } = options;
+  const commandLine = `npm run ${scriptName}`;
+
+  if (!quiet) {
+    console.log(`\n→ ${commandLine}`);
+  }
+
+  if (dryRun) {
+    return;
+  }
+
+  execSync(commandLine, { stdio: 'inherit' });
+}
+
+function showStartHelp() {
+  console.log(`
+Usage: npx aiox-core start [options]
+
+Guided onboarding command:
+- Detect your IDE integration in the current repository
+- Sync required files for that IDE
+- Print the exact activation path for first value
+
+Options:
+  --ide <name>    Override IDE detection (claude, gemini, codex, cursor, github-copilot, antigravity)
+  --no-sync       Skip sync scripts
+  --validate      Run parity validation after sync
+  --dry-run       Print actions without executing scripts
+  -h, --help      Show this help message
+
+Examples:
+  npx aiox-core start
+  npx aiox-core start --ide codex
+  npx aiox-core start --ide gemini --validate
+  npx aiox-core start --no-sync --dry-run
+`);
+}
+
+async function runStart() {
+  const startArgs = args.slice(1);
+  if (startArgs.includes('--help') || startArgs.includes('-h')) {
+    showStartHelp();
+    return;
+  }
+
+  const overrideIde = parseFlagValue('--ide', startArgs);
+  const shouldSync = !startArgs.includes('--no-sync');
+  const shouldValidate = startArgs.includes('--validate');
+  const dryRun = startArgs.includes('--dry-run');
+  const cwd = process.cwd();
+
+  const detectedIde = overrideIde || detectIde(cwd);
+  if (!detectedIde) {
+    console.log('⚠️  No IDE integration detected in this repository.\n');
+    console.log('Next steps:');
+    console.log('1) Install AIOX in this project: npx aiox-core install');
+    console.log('2) Re-run: npx aiox-core start');
+    console.log('3) Or choose IDE manually: npx aiox-core start --ide codex');
+    return;
+  }
+
+  if (!IDE_START_MATRIX[detectedIde]) {
+    console.error(`❌ Unsupported IDE override: ${detectedIde}`);
+    console.error(`Supported IDE values: ${Object.keys(IDE_START_MATRIX).join(', ')}`);
+    process.exit(1);
+  }
+
+  const ide = IDE_START_MATRIX[detectedIde];
+
+  console.log(`🚀 AIOX Start Here (${ide.label})`);
+  console.log(`Repository: ${cwd}`);
+  console.log(`Activation path: ${ide.activation}`);
+
+  if (shouldSync) {
+    try {
+      for (const script of ide.syncScripts) {
+        runStartScript(script, { dryRun });
+      }
+      console.log('\n✅ IDE sync completed.');
+    } catch (error) {
+      console.error(`\n❌ Sync failed: ${error.message}`);
+      process.exit(1);
+    }
+  } else {
+    console.log('\nℹ️  Sync skipped (--no-sync).');
+  }
+
+  if (shouldValidate) {
+    try {
+      runStartScript('validate:parity', { dryRun });
+      console.log('\n✅ Parity validation completed.');
+    } catch (error) {
+      console.error(`\n❌ Parity validation failed: ${error.message}`);
+      process.exit(1);
+    }
+  }
+
+  console.log('\nFirst-value checklist:');
+  console.log(`1) Activate an agent (${ide.activation})`);
+  console.log('2) Confirm greeting response');
+  console.log('3) Run *help (or equivalent) and verify useful output');
+  console.log(`\nTip: ${ide.setupHint}`);
 }
 
 // Helper: Show version
@@ -875,6 +1049,11 @@ async function main() {
     case 'init': {
       // Create new project (flags parsed inside initProject)
       await initProject();
+      break;
+    }
+
+    case 'start': {
+      await runStart();
       break;
     }
 
