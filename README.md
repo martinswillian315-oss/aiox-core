@@ -34,8 +34,12 @@ npx aiox-core install
 - Gemini CLI: `/aiox-menu` → `/aiox-<agent>`
 - Codex CLI: `/skills` → `aiox-<agent-id>`
 - Cursor/Copilot/AntiGravity: siga os limites e workarounds em `docs/ide-integration.md`
-3. Ative 1 agente e confirme o greeting.
-4. Rode 1 comando inicial (`*help` ou equivalente) para validar first-value.
+3. Rode o comando unificado de início (recomendado):
+```bash
+npx aiox-core start
+```
+4. Ative 1 agente e confirme o greeting.
+5. Rode 1 comando inicial (`*help` ou equivalente) para validar first-value.
 
 Definição de first-value (binária): ativação de agente + greeting válido + comando inicial com output útil em <= 10 minutos.
 

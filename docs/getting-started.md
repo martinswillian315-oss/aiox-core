@@ -34,14 +34,22 @@ cd my-first-project
 # npx aiox-core install
 ```
 
-### Step 2: Pick your IDE activation path
+### Step 2: Run the unified start command
+
+```bash
+npx aiox-core start
+```
+
+This command detects your IDE integration in the repository, syncs required files, and prints your exact activation path.
+
+### Step 3: Pick your IDE activation path
 
 - Claude Code: `/agent-name`
 - Gemini CLI: `/aiox-menu` then `/aiox-<agent>`
 - Codex CLI: `/skills` then `aiox-<agent-id>`
 - Cursor/Copilot/AntiGravity: follow constraints in `docs/ide-integration.md`
 
-### Step 3: Validate first value
+### Step 4: Validate first value
 
 First value is achieved when all 3 conditions are true:
 1. You activate one AIOX agent.

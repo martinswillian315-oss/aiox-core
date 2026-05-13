@@ -11,6 +11,23 @@ Guide for integrating AIOX with supported IDEs and AI development platforms.
 
 ---
 
+## Single Start Path (Recommended)
+
+Use the unified start command from your project root:
+
+```bash
+npx aiox-core start
+```
+
+It auto-detects your IDE integration, runs required sync scripts, and prints the activation path you should use for first-value.
+
+Optional flags:
+- `--ide <name>` to override detection
+- `--no-sync` to only print guidance
+- `--validate` to run `validate:parity` after sync
+
+---
+
 ## Compatibility Contract (AIOX 4.2.11)
 
 The IDE matrix is enforced by a versioned contract:

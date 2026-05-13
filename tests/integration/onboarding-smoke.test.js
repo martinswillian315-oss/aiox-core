@@ -56,10 +56,15 @@ describe('Onboarding smoke flow (AIOX-DIFF-4.0.5)', () => {
     const topHelp = runNode(cliBin, ['--help'], tempDir);
     expect(topHelp).toContain('init <name>');
     expect(topHelp).toContain('install');
+    expect(topHelp).toContain('start');
 
     const initHelp = runNode(cliBin, ['init', '--help'], tempDir);
     expect(initHelp).toContain('--skip-install');
     expect(initHelp).toContain('--template');
+
+    const startHelp = runNode(cliBin, ['start', '--help'], tempDir);
+    expect(startHelp).toContain('Guided onboarding command');
+    expect(startHelp).toContain('--ide <name>');
 
     const versionOutput = runNode(cliBin, ['--version'], tempDir).trim();
     expect(versionOutput).toMatch(/^\d+\.\d+\.\d+$/);
@@ -75,8 +80,10 @@ describe('Onboarding smoke flow (AIOX-DIFF-4.0.5)', () => {
 
     expect(gettingStarted).toContain('10-Minute Quick Path');
     expect(gettingStarted).toContain('Step 1: Install AIOX');
-    expect(gettingStarted).toContain('Step 2: Pick your IDE activation path');
-    expect(gettingStarted).toContain('Step 3: Validate first value');
+    expect(gettingStarted).toContain('Step 2: Run the unified start command');
+    expect(gettingStarted).toContain('Step 3: Pick your IDE activation path');
+    expect(gettingStarted).toContain('Step 4: Validate first value');
+    expect(gettingStarted).toContain('npx aiox-core start');
     expect(gettingStarted).toContain('*help');
     expect(gettingStarted).toContain('PASS rule');
   });
