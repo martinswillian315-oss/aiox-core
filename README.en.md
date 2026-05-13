@@ -27,17 +27,16 @@ npx aiox-core init my-project
 cd your-project
 npx aiox-core install
 ```
-2. Choose your IDE/CLI and the activation path:
-- Claude Code: `/agent-name`
-- Gemini CLI: `/aiox-menu` → `/aiox-<agent>`
-- Codex CLI: `/skills` → `aiox-<agent-id>`
-- Cursor/Copilot/AntiGravity: follow the limits and workarounds in `docs/ide-integration.md`
-3. Run the unified start command (recommended):
+2. Run the unified start command (recommended):
 ```bash
 npx aiox-core start
 ```
-4. Activate 1 agent and confirm the greeting.
-5. Run 1 initial command (`*help` or equivalent) to validate first-value.
+3. Activate 1 agent and confirm the greeting.
+   - Claude Code: `/agent-name`
+   - Gemini CLI: `/aiox-menu` → `/aiox-<agent>`
+   - Codex CLI: `/skills` → `aiox-<agent-id>`
+   - Cursor/Copilot/AntiGravity: follow limits/workarounds in `docs/ide-integration.md`
+4. Run 1 initial command (`*help` or equivalent) to validate first-value.
 
 First-value definition (binary): agent activation + valid greeting + initial command with useful output in <= 10 minutes.
 
